@@ -94,3 +94,12 @@
     (log/infof "cmd: invoke: cmd-map=%s spec=%s f=%s\n" cmd-map spec f)
     (apply f (:args cmd-map))))
 
+(defmacro defcommand [name version args & body]
+  (let [fn-args (vec (map #(symbol (.substring (str (:name %1)) 1)) args))]
+    `(do
+       (defn ~name ~fn-args ~@body)
+       (swap! ~'*commands* conj [~(str name) ~version ~name ~args]))))
+
+(defn register-commands! [commands]
+  (doseq [[name ver f args] commands]
+    (register-command! name ver f args)))
