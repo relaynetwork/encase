@@ -94,7 +94,6 @@
     (log/infof "cmd: invoke: cmd-map=%s spec=%s f=%s\n" cmd-map spec f)
     (apply f (:args cmd-map))))
 
-
 (def *command-stack* nil)
 (def defer-command!  nil)
 (def commands        nil)
@@ -110,3 +109,15 @@
   `(with-command-stack*
      (fn []
        ~@body)))
+
+(defmacro defcommand [fname version args & body]
+  (let [fn-name (symbol (name fname))
+        fn-args (vec (map #(symbol (name (:name %1))) args))]
+    `(do
+       (defn ~fn-name ~fn-args ~@body)
+       (swap! ~'*commands* conj [~fname ~version ~fn-name ~args]))))
+
+(defn register-commands! [commands]
+  (doseq [[name ver f args] commands]
+    (register-command! name ver f args)))
+
