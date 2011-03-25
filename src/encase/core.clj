@@ -16,20 +16,20 @@
        (raise ~msg)
        true)))
 
-(defn make-command [name ver f sig]
-  {:name name
+(defn make-command [n ver f sig]
+  {:name (name n)
    :version ver
    :signature sig
    :function f})
 
-(defn register-command! [name ver f sig]
-  (swap! *commands* assoc-in [name ver] (make-command name ver f sig)))
+(defn register-command! [n ver f sig]
+  (swap! *commands* assoc-in [(name n) ver] (make-command (name n) ver f sig)))
 
 (defn lookup-command
   ([n ver]
-     (get-in @*commands* [n ver]))
+     (get-in @*commands* [(name n) ver]))
   ([cmd-map]
-     (let [cmd (get-in @*commands* [(str  (:name cmd-map))
+     (let [cmd (get-in @*commands* [(name  (:name cmd-map))
                                     (:version cmd-map)])]
        (assert! (format "Error: command(%s) not found." cmd-map)
                 cmd)
@@ -61,28 +61,28 @@
   cmd-map)
 
 
-(defn make-instance* [name ver args]
-  (let [cmd  (lookup-command name ver)
-        body {:name name
+(defn make-instance* [n ver args]
+  (let [cmd  (lookup-command n ver)
+        body {:name (name n)
               :version ver
               :args args}]
     body))
 
-(defn make-instance [name ver & args]
-  (make-instance* name ver args))
+(defn make-instance [n ver & args]
+  (make-instance* n ver args))
 
-(defn make-instance*! [name ver args]
-  (validate-command-instance! (make-instance* name ver args)))
+(defn make-instance*! [n ver args]
+  (validate-command-instance! (make-instance* n ver args)))
 
-(defn make-instance! [name ver & args]
-  (make-instance*! name ver args))
+(defn make-instance! [n ver & args]
+  (make-instance*! n ver args))
 
-(defn make-instance-json [name ver & args]
-  (json/json-str (make-instance* name ver args)))
+(defn make-instance-json [n ver & args]
+  (json/json-str (make-instance* n ver args)))
 
-(defn make-instance-json! [name ver & args]
-  (printf "make-instance-json! %s %s %s\n" name ver args)
-  (json/json-str (make-instance*! name ver args)))
+(defn make-instance-json! [n ver & args]
+  (printf "make-instance-json! %s %s %s\n" n ver args)
+  (json/json-str (make-instance*! n ver args)))
 
 (defn json-to-command [s]
   (json/read-json s))
@@ -94,11 +94,28 @@
     (log/infof "cmd: invoke: cmd-map=%s spec=%s f=%s\n" cmd-map spec f)
     (apply f (:args cmd-map))))
 
-(defmacro defcommand [name version args & body]
-  (let [fn-args (vec (map #(symbol (.substring (str (:name %1)) 1)) args))]
+(def *command-stack* nil)
+(def defer-command!  nil)
+(def commands        nil)
+
+(defn with-command-stack* [f]
+  (binding [*command-stack* (atom[])
+            defer-command!  (fn [command]
+                              (swap! *command-stack* conj command))
+            commands        (fn [] @*command-stack*)]
+    (f)))
+
+(defmacro with-command-stack [& body]
+  `(with-command-stack*
+     (fn []
+       ~@body)))
+
+(defmacro defcommand [fname version args & body]
+  (let [fn-name (symbol (name fname))
+        fn-args (vec (map #(symbol (name (:name %1))) args))]
     `(do
-       (defn ~name ~fn-args ~@body)
-       (swap! ~'*commands* conj [~(str name) ~version ~name ~args]))))
+       (defn ~fn-name ~fn-args ~@body)
+       (swap! ~'*commands* conj [~fname ~version ~fn-name ~args]))))
 
 
 
