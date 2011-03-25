@@ -100,6 +100,11 @@
        (defn ~name ~fn-args ~@body)
        (swap! ~'*commands* conj [~(str name) ~version ~name ~args]))))
 
+
+
 (defn register-commands! [commands]
   (doseq [[name ver f args] commands]
     (register-command! name ver f args)))
+
+(defn clear-commands! []
+  (reset! *commands* {}))
