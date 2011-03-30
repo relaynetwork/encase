@@ -115,13 +115,13 @@
         fn-args (vec (map #(symbol (name (:name %1))) args))]
     `(do
        (defn ~fn-name ~fn-args ~@body)
-       (swap! ~'*commands* conj [~(str fname) ~version ~fn-name ~args]))))
+       (swap! ~'*commands* conj [~(str fn-ame) ~version ~fn-name ~args]))))
 
 
 
 (defn register-commands! [commands]
-  (doseq [[name ver f args] commands]
-    (register-command! name ver f args)))
+  (doseq [[cmd-name ver f args] commands]
+    (register-command! cmd-name ver f args)))
 
 (defn clear-commands! []
   (reset! *commands* {}))
