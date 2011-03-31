@@ -115,7 +115,7 @@
         fn-args (vec (map #(symbol (name (:name %1))) args))]
     `(do
        (defn ~fn-name ~fn-args ~@body)
-       (swap! ~'*commands* conj [~(str fn-ame) ~version ~fn-name ~args]))))
+       (swap! ~'*commands* conj [~(str fn-name) ~version ~fn-name ~args]))))
 
 
 
