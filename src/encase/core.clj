@@ -125,3 +125,7 @@
 
 (defn clear-commands! []
   (reset! *commands* {}))
+
+(defn exec-commands! []
+  (doseq [cmd (commands)]
+    (invoke cmd)))
