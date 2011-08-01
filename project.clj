@@ -3,4 +3,4 @@
   :dependencies [[org.clojure/clojure "1.2.0"]
                  [org.clojure/clojure-contrib "1.2.0"]
                  [org.clojars.kyleburton/clj-etl-utils "1.0.38-SNAPSHOT"]]
-  :dev-dependencies [[swank-clojure "1.2.1"]])
+  :dev-dependencies [[swank-clojure "1.4.0-SNAPSHOT"]])
