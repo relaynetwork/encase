@@ -1,13 +1,12 @@
 (ns encase.core
   (:require
-   [clojure.contrib.json :as json]
-   [clojure.contrib.seq-utils :as seq]
-   [clj-etl-utils.log      :as log])
+   [clojure.data.json        :as json]
+   [clj-etl-utils.log        :as log])
   (:use
    [clj-etl-utils.lang-utils :only [raise]]))
 
 
-(defonce *commands* (atom {}))
+(defonce command-registry (atom {}))
 
 (defmacro assert! [msg & expr]
   `(let [b# '~expr
@@ -23,13 +22,13 @@
    :function f})
 
 (defn register-command! [n ver f sig]
-  (swap! *commands* assoc-in [(name n) ver] (make-command (name n) ver f sig)))
+  (swap! command-registry assoc-in [(name n) ver] (make-command (name n) ver f sig)))
 
 (defn lookup-command
   ([n ver]
-     (get-in @*commands* [(name n) ver]))
+     (get-in @command-registry [(name n) ver]))
   ([cmd-map]
-     (let [cmd (get-in @*commands* [(name  (:name cmd-map))
+     (let [cmd (get-in @command-registry [(name  (:name cmd-map))
                                     (:version cmd-map)])]
        (assert! (format "Error: command(%s) not found." cmd-map)
                 cmd)
@@ -47,7 +46,7 @@
              (contains? cmd-map k)))
   (let [sig  (:signature (lookup-command cmd-map))
         args (:args cmd-map)]
-    (doseq [[idx arg-spec] (seq/indexed sig)]
+    (doseq [[idx arg-spec] (map-indexed vector sig)] ;; (seq/indexed sig)
       (printf "validaing: %s isa %s\n"
               (nth args idx)
               (:type arg-spec))
@@ -94,15 +93,15 @@
     (log/infof "cmd: invoke: cmd-map=%s spec=%s f=%s\n" cmd-map spec f)
     (apply f (:args cmd-map))))
 
-(def *command-stack* nil)
-(def defer-command!  nil)
-(def commands        nil)
+(defonce ^{:dynamic true} command-stack nil)
+(defonce ^{:dynamic true} defer-command!  nil)
+(defonce ^{:dynamic true} commands        nil)
 
 (defn with-command-stack* [f]
-  (binding [*command-stack* (atom[])
+  (binding [command-stack   (atom[])
             defer-command!  (fn [command]
-                              (swap! *command-stack* conj command))
-            commands        (fn [] @*command-stack*)]
+                              (swap! command-stack conj command))
+            commands        (fn [] @command-stack)]
     (f)))
 
 (defmacro with-command-stack [& body]
@@ -115,7 +114,7 @@
         fn-args (vec (map #(symbol (name (:name %1))) args))]
     `(do
        (defn ~fn-name ~fn-args ~@body)
-       (swap! ~'*commands* conj [~(str fn-name) ~version ~fn-name ~args]))))
+       (swap! ~'command-registry conj [~(str fn-name) ~version ~fn-name ~args]))))
 
 
 
@@ -124,7 +123,7 @@
     (register-command! cmd-name ver f args)))
 
 (defn clear-commands! []
-  (reset! *commands* {}))
+  (reset! command-stack {}))
 
 (defn exec-commands! []
   (doseq [cmd (commands)]
