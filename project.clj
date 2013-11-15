@@ -4,7 +4,7 @@
             :url          "http://www.eclipse.org/legal/epl-v10.html"
             :distribution :repo
             :comments     "Same as Clojure"}
-  :lein-release { :scm :git }
+  :lein-release {:deploy-via :clojars :scm :git}
   :plugins [[lein-release/lein-release "1.0.5"]
             [lein-swank "1.4.5"]]
   :profiles             {:dev {:dependencies [[swank-clojure "1.4.3"]]}
