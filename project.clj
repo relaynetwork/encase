@@ -1,5 +1,9 @@
 (defproject com.relaynetwork/encase "1.0.9"
   :description "Command Pattern Library for Clojure"
+  :license {:name "Relay Network Private"
+            :url "http://relaynetwork.com/"
+            :distribution :repo
+            :comments "Private and copyrighted."}
   :lein-release { :scm :git }
   :plugins [[lein-release/lein-release "1.0.4"]
             [lein-swank "1.4.5"]]
