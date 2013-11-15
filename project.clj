@@ -1,4 +1,4 @@
-(defproject com.relaynetwork/encase "1.0.9-SNAPSHOT"
+(defproject com.relaynetwork/encase "1.0.9"
   :description "Command Pattern Library for Clojure"
   :lein-release { :scm :git }
   :plugins [[lein-release/lein-release "1.0.4"]
