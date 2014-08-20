@@ -1,7 +1,7 @@
 (ns encase.core
   (:require
    [clojure.data.json        :as json]
-   [clj-etl-utils.log        :as log])
+   [clojure.tools.logging    :as log])
   (:use
    [clj-etl-utils.lang-utils :only [raise]]))
 
