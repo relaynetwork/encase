@@ -1,4 +1,4 @@
-(defproject com.relaynetwork/encase "1.0.11"
+(defproject com.relaynetwork/encase "1.0.12-SNAPSHOT"
   :description "Command Pattern Library for Clojure"
   :license {:name         "Eclipse Public License - v 1.0"
             :url          "http://www.eclipse.org/legal/epl-v10.html"
